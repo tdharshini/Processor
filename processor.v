@@ -1,0 +1,25 @@
+module processor(Result, source1, source2, LDRdata, datain,counter);
+parameter W = 32;
+wire [31:0] code, dataout;
+wire [3:0] Op_code, Cond, Flag;
+wire  S, LDRsel, rw, bussel, en, reset;
+inout reg [31:0] Result, source1, source2, LDRdata, datain;
+wire [15:0] addbus;
+input [15:0] counter;
+wire [2:0] LS;
+wire [4:0] rotbit;
+assign reset=1;
+assign Op_code=code[27:24];
+assign Cond=code[31:28];
+assign S=code[23];
+assign LS=code[2:0];
+assign rotbit=code[10:6];
+wire N,Z,C,V;
+wire [31:0] garbage1, garbage2;
+	ram ram1(1'b1,1'b1, counter, datain,code);
+	register reg1(code, LDRdata, LDRsel, source1, source2);	
+	alu alu1(source1, source2, Op_code, LS, Cond, S, N,Z,C,V, Result, rotbit);
+	memorycontrol cont1(code,source1,source2,rw, LDRsel, bussel,datain, addbus,LDRdata, en, Result);	
+	ram ram2(en,rw, addbus, datain,dataout);
+	register reg2(code, dataout, LDRsel, garbage1, garbage2);	
+endmodule 	
